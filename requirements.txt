@@ -1,0 +1,5 @@
+numpy
+# optional, auto-detected (see: python run.py --doctor)
+# vosk             offline speech recognition on any OS (+ a model in data/models/)
+# faster-whisper   Whisper speech recognition (CPU)
+# onnxruntime-qnn  Snapdragon NPU
