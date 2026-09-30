@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>EdgeScribe</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230071e3'/%3E%3Cpath d='M7 16h3l2-6 3 12 3-9 2 5 2-2h3' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent-2)"/></linearGradient></defs><rect width="32" height="32" rx="9"/><path d="M7 16h3l2-6 3 12 3-9 2 5 2-2h3"/></svg>
+      <span>EdgeScribe</span>
+    </div>
+    <nav class="segmented" id="tabs" role="tablist" aria-label="Sections">
+      <span class="tab-ink" id="tabInk" aria-hidden="true"></span>
+      <button role="tab" data-tab="live" class="on">Live</button>
+      <button role="tab" data-tab="today">Today<span class="badge-dot hidden" id="todayDot"></span></button>
+      <button role="tab" data-tab="study">Study<span class="badge-dot hidden" id="studyDot"></span></button>
+      <button role="tab" data-tab="teach">Teach</button>
+      <button role="tab" data-tab="insights">Insights</button>
+      <button role="tab" data-tab="ask">Ask</button>
+      <button role="tab" data-tab="library">Library</button>
+    </nav>
+    <div class="nav-right">
+      <span class="speaking hidden" id="speakingPill"><i></i>Speaking<button id="stopSpeak" aria-label="Stop speaking">Stop</button></span>
+      <button class="ring" id="rank" title="Level" aria-label="Level and XP"></button>
+      <button class="btn small tour-btn" id="btnTour" title="Guided tour (T)">Tour <kbd>T</kbd></button>
+      <button class="icon-btn" id="btnSettings" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.3.62.94 1.02 1.63 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ================================ LIVE ================================ -->
+<section class="tab on" id="tab-live">
+  <div class="title-row">
+    <div><h1>Live</h1><p class="sub">Listens with a spiking neuron and wakes the heavy models only when someone speaks.</p></div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="card controls">
+    <button class="btn primary lg" id="btnMic"><span class="dot"></span><span class="lbl">Start listening</span></button>
+    <div class="vsep"></div>
+    <div class="demo">
+      <button class="btn lg" id="btnSim">Run demo</button>
+      <div class="segmented small" id="simSource" role="radiogroup" aria-label="Demo audio">
+        <button data-v="voice" class="on" role="radio">Spoken</button><button data-v="synth" role="radio">Synthetic</button>
+      </div>
+      <label class="slider"><span>Quiet</span><input type="range" id="hard" min="0" max="1" step="0.1" value="0.2" aria-label="Room noise"><span>Noisy</span></label>
+    </div>
+    <label class="btn lg ghost file">Import audio<input type="file" id="fileWav" accept=".wav,audio/wav" hidden></label>
+    <span class="status" id="liveStatus">Ready</span>
+  </div>
+
+  <div class="grid g-live">
+    <div class="card span-8">
+      <div class="card-head"><h2>Spiking listener</h2><span class="muted">16 frequency bands · spikes · membrane potential</span></div>
+      <canvas id="raster" width="1100" height="416" aria-label="Spike raster"></canvas>
+      <div class="legend"><span><i class="sw" style="background:var(--s3)"></i>Band spike</span><span><i class="sw" style="background:var(--s1)"></i>Membrane potential</span><span><i class="sw dash"></i>Fire threshold</span><span><i class="sw" style="background:var(--s4)"></i>Wake</span><span><i class="sw shade"></i>Models awake</span></div>
+    </div>
+    <div class="card span-4">
+      <div class="card-head"><h2>Neuron</h2><span class="muted">learned synapses</span></div>
+      <canvas id="brain" width="360" height="300" aria-label="Neuron with learned synapses"></canvas>
+      <div class="legend"><span><i class="sw" style="background:var(--s3)"></i>Excitatory</span><span><i class="sw" style="background:var(--s2)"></i>Inhibitory</span></div>
+    </div>
+
+    <div class="stats span-12" id="liveKpis"></div>
+
+    <div class="card span-8">
+      <div class="card-head"><h2>Transcript</h2><span class="muted">Flag or dismiss sentences to teach the model</span></div>
+      <div id="feed" class="feed"><div class="empty"><b>No transcript yet</b>Start listening, run a demo, or import a WAV file.</div></div>
+    </div>
+    <div class="card span-4">
+      <div class="card-head"><h2>Wake events</h2><span class="muted">Was it really speech?</span></div>
+      <div id="wakes" class="wakes"><div class="empty small">Wake events appear here.</div></div>
+      <button class="btn small ghost full" id="btnMissed">It missed something I said</button>
+    </div>
+
+    <div class="card span-12 hidden" id="summaryCard"></div>
+  </div>
+</section>
+
+<!-- ================================ TODAY ================================ -->
+<section class="tab" id="tab-today">
+  <div class="title-row">
+    <div><h1 id="todayGreeting">Today</h1><p class="sub" id="todayDate"></p></div>
+    <div class="toolbar"><button class="btn ghost" id="readDay">Read my day</button><button class="btn primary" id="nextAction">…</button></div>
+  </div>
+  <div class="stats" id="todayStats"></div>
+  <div class="grid" style="margin-top:16px">
+    <div class="card span-8">
+      <div class="card-head"><h2>Tasks</h2>
+        <div class="segmented small" id="taskFilter" role="radiogroup" aria-label="Task filter"><button data-v="open" class="on" role="radio">Open</button><button data-v="done" role="radio">Done</button><button data-v="dismissed" role="radio">Dismissed</button></div>
+      </div>
+      <form id="taskForm" class="search compact"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><input id="taskInput" placeholder="Add a task… e.g. Email the TA by Friday at 4pm" autocomplete="off" aria-label="New task"><button class="btn primary small">Add</button></form>
+      <div id="taskList"></div>
+      <p class="muted small">Tasks come from action items in your sessions. Marking one “Not a task” teaches the classifier; typing one in teaches it too.</p>
+    </div>
+    <div class="span-4 col">
+      <div class="card"><div class="card-head"><h2>Topics</h2><span class="muted">across sessions and notes</span></div><div id="topicCloud" class="pills"></div><div id="topicDetail"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================ STUDY ================================ -->
+<section class="tab" id="tab-study">
+  <div class="title-row">
+    <div><h1>Study</h1><p class="sub">Flashcards made from your notes and lectures, scheduled with spaced repetition.</p></div>
+    <div class="toolbar"><button class="btn" id="genCards">Make cards from everything</button></div>
+  </div>
+  <div class="teach">
+    <div class="teach-meta"><span class="chip" id="cardSource"></span><span class="combo"><b id="cardsLeft">0</b> due</span></div>
+    <div class="card teach-card flash" id="flash">
+      <div class="q" id="cardKind">Question</div>
+      <div class="sentence" id="cardFront">…</div>
+      <div class="back hidden" id="cardBack"></div>
+      <button class="icon-btn speak" id="cardSpeak" aria-label="Read aloud" title="Read aloud"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+    </div>
+    <div class="teach-btns" id="showRow"><button class="btn xl primary" id="showAnswer">Show answer <kbd>Space</kbd></button></div>
+    <div class="grade-btns hidden" id="gradeRow">
+      <button data-g="1" class="grade again">Again<small></small></button>
+      <button data-g="3" class="grade hard">Hard<small></small></button>
+      <button data-g="4" class="grade good">Good<small></small></button>
+      <button data-g="5" class="grade easy">Easy<small></small></button>
+    </div>
+    <div class="stats four" id="studyStats"></div>
+  </div>
+</section>
+
+<!-- ================================ TEACH ================================ -->
+<section class="tab" id="tab-teach">
+  <div class="title-row"><div><h1>Teach</h1><p class="sub">Every answer retrains the model instantly. The cards it's least sure about come first.</p></div></div>
+  <div class="teach">
+    <div class="teach-meta"><span id="teachOrigin" class="chip"></span><span class="combo" id="combo"><b id="comboN">0</b> streak</span></div>
+    <div class="card teach-card" id="teachCard">
+      <div class="q">Is this an action item?</div>
+      <div class="sentence" id="teachText">…</div>
+      <button class="icon-btn speak" id="teachSpeak" aria-label="Read aloud" title="Read aloud"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+      <div class="answer hidden" id="teachAnswer"></div>
+    </div>
+    <div class="teach-btns">
+      <button class="btn xl" id="teachNo">Not an action <kbd>N</kbd></button>
+      <button class="btn xl primary" id="teachYes">Action item <kbd>Y</kbd></button>
+    </div>
+    <div class="stats four" id="teachStats"></div>
+  </div>
+</section>
+
+<!-- ================================ INSIGHTS ================================ -->
+<section class="tab" id="tab-insights">
+  <div class="title-row">
+    <div><h1>Insights</h1><p class="sub">Everything the system measures, and everything it has learned.</p></div>
+    <div class="toolbar">
+      <button class="btn primary" data-train="both">Train both</button>
+      <button class="btn" data-train="clf">Classifier</button>
+      <button class="btn" data-train="snn">Listener</button>
+      <a class="btn ghost" href="/api/backup" download>Back up</a>
+    </div>
+  </div>
+  <div class="progress hidden" id="trainBar"><i id="trainFill"></i><span id="trainTxt"></span><button class="btn small" id="trainCancel">Cancel</button></div>
+  <div class="stats six" id="labTiles"></div>
+  <div class="grid g-lab" id="labGrid"></div>
+</section>
+
+<!-- ================================ ASK ================================ -->
+<section class="tab" id="tab-ask">
+  <div class="title-row"><div><h1>Ask</h1><p class="sub">Search your transcripts and notes. Nothing leaves this device.</p></div></div>
+  <div class="grid g-ask">
+    <div class="span-8">
+      <form id="askForm" class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="askQ" placeholder="When is the assignment due?" autocomplete="off" aria-label="Search"><button class="btn primary small">Search</button></form>
+      <div class="segmented small" id="askKind" role="radiogroup" aria-label="Search in" style="margin-bottom:14px"><button data-v="" class="on" role="radio">Everything</button><button data-v="session" role="radio">Sessions</button><button data-v="note" role="radio">Notes</button></div>
+      <div id="askOut"></div>
+    </div>
+    <div class="card span-4">
+      <div class="card-head"><h2>Add notes</h2></div>
+      <input id="docName" class="field" placeholder="Title (optional)">
+      <textarea id="docText" class="field" rows="8" placeholder="Paste notes, or choose a .txt or .md file"></textarea>
+      <div class="row"><label class="btn small ghost file">Choose file<input type="file" id="docFile" accept=".txt,.md,text/plain" hidden></label><button class="btn small primary" id="docAdd">Add to library</button></div>
+      <p class="muted small" id="docNote"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================ LIBRARY ================================ -->
+<section class="tab" id="tab-library">
+  <div class="title-row"><div><h1>Library</h1><p class="sub">Every session, with its transcript, summary and measurements.</p></div></div>
+  <div class="grid g-ask">
+    <div class="card span-4 list-card"><div id="archList" class="list"></div></div>
+    <div class="card span-8"><div id="archDetail"><div class="empty"><b>Select a session</b>Its transcript and summary appear here.</div></div></div>
+  </div>
+</section>
+</main>
+
+<!-- ================================ SETTINGS ================================ -->
+<dialog id="settings" aria-labelledby="setTitle">
+  <div class="sheet">
+    <div class="sheet-head"><h2 id="setTitle">Settings</h2><button class="btn small" id="setDone">Done</button></div>
+
+    <h3>Voice</h3>
+    <div class="group">
+      <div class="cell"><span>Mode</span>
+        <div class="segmented small" id="ttsMode" role="radiogroup" aria-label="Voice mode"><button data-v="offline" role="radio">Offline</button><button data-v="online" role="radio">Online</button></div>
+      </div>
+      <div class="cell note" id="ttsModeNote"></div>
+      <div class="cell"><span>Voice</span><select id="ttsVoice" aria-label="Voice"></select></div>
+      <div class="cell"><span>Speed</span><input type="range" id="ttsRate" min="-5" max="5" step="1" aria-label="Speaking speed"><output id="ttsRateOut"></output></div>
+      <div class="cell"><span>Read summaries aloud automatically</span><label class="switch"><input type="checkbox" id="autoRead"><i></i></label></div>
+      <div class="cell"><button class="btn small" id="ttsTest">Play sample</button><span class="muted small" id="ttsTestNote"></span></div>
+    </div>
+
+    <h3>Recognition</h3>
+    <div class="group">
+      <div class="cell"><span>Adaptive noise suppression<small>Applied only when a segment is noisy (SNR below 25 dB)</small></span><label class="switch"><input type="checkbox" id="denoise"><i></i></label></div>
+      <div class="cell"><span>Voice bank<small id="bankNote"></small></span><span class="muted" id="bankCount"></span></div>
+    </div>
+
+    <h3>Appearance</h3>
+    <div class="group">
+      <div class="cell"><span>Theme</span>
+        <div class="segmented small" id="themeSel" role="radiogroup" aria-label="Theme"><button data-v="dark" role="radio">Dark</button><button data-v="light" role="radio">Light</button><button data-v="auto" role="radio">Auto</button></div>
+      </div>
+      <div class="cell"><span>Accent<small>Cyan · Violet · Emerald · Amber</small></span>
+        <div class="swatches" id="accentSel" role="radiogroup" aria-label="Accent colour"><button class="swatch" data-v="steel" role="radio" aria-label="Steel"></button><button class="swatch" data-v="mist" role="radio" aria-label="Mist"></button><button class="swatch" data-v="slate" role="radio" aria-label="Slate"></button></div>
+      </div>
+    </div>
+
+    <h3>System</h3>
+    <div class="group" id="healthList"></div>
+
+    <h3>Data</h3>
+    <div class="group">
+      <div class="cell"><span>Everything is stored in a local SQLite file on this device.</span></div>
+      <div class="cell"><button class="btn small danger" id="btnReset">Reset all learning…</button></div>
+    </div>
+  </div>
+</dialog>
+
+<div id="toasts" aria-live="polite"></div>
+<div id="tip" class="tip" role="tooltip"></div>
+<audio id="player" hidden></audio>
+<script src="/charts.js"></script>
+<script src="/app.js"></script>
+<script src="/connected.js"></script>
+<script src="/tour.js"></script>
+</body>
+</html>
